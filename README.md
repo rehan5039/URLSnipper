@@ -1022,3 +1022,129 @@ Building a web application involves considering various aspects beyond what we'v
     - Include a terms of service and privacy policy for your users.
 
 Remember to follow best practices for web application development and ensure your application is secure, user-friendly, and scalable. Each additional feature should be implemented with a focus on user experience and security.
+
+Implementing all the features mentioned requires a comprehensive set of code that goes beyond the scope of this platform, and it's not practical to provide all of it in a single response. However, I can guide you on how to implement a few additional features. Let's focus on implementing email confirmation for registration and password reset functionality.
+
+### Email Confirmation for Registration:
+
+1. **Install Flask-Mail:**
+   ```bash
+   pip install Flask-Mail
+   ```
+
+2. **Update `app.py` for Email Confirmation:**
+   ```python
+   from flask_mail import Mail, Message
+
+   # ... (existing code)
+
+   mail = Mail(app)
+
+   app.config['MAIL_SERVER'] = 'your_mail_server'
+   app.config['MAIL_PORT'] = 587
+   app.config['MAIL_USE_TLS'] = True
+   app.config['MAIL_USERNAME'] = 'your_mail_username'
+   app.config['MAIL_PASSWORD'] = 'your_mail_password'
+
+   # ... (existing code)
+
+   @app.route('/register', methods=['GET', 'POST'])
+   def register():
+       # ... (existing code)
+
+       if form.validate_on_submit():
+           # ... (existing code)
+
+           # Send confirmation email
+           send_confirmation_email(user.email)
+
+   def send_confirmation_email(email):
+       token = generate_confirmation_token(email)
+       confirm_url = url_for('confirm_email', token=token, _external=True)
+       message = Message('Confirm Your Email', sender='your_email@example.com', recipients=[email])
+       message.body = f'Thank you for registering. Please confirm your email by clicking on the link: {confirm_url}'
+       mail.send(message)
+
+   def generate_confirmation_token(email):
+       serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+       return serializer.dumps(email, salt='email-confirm')
+
+   def confirm_token(token, expiration=3600):
+       serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+       try:
+           email = serializer.loads(token, salt='email-confirm', max_age=expiration)
+       except:
+           return False
+       return email
+   ```
+
+3. **Create Confirmation Route:**
+   ```python
+   @app.route('/confirm_email/<token>')
+   def confirm_email(token):
+       email = confirm_token(token)
+       if email:
+           # Update user status as confirmed in the database
+           flash('Email confirmed successfully!', 'success')
+           return redirect(url_for('login'))
+       else:
+           flash('Invalid or expired confirmation link.', 'danger')
+           return redirect(url_for('home'))
+   ```
+
+### Password Reset Functionality:
+
+1. **Update `app.py` for Password Reset:**
+   ```python
+   from flask_mail import Mail, Message
+
+   # ... (existing code)
+
+   @app.route('/forgot_password', methods=['GET', 'POST'])
+   def forgot_password():
+       # ... (existing code)
+
+       if form.validate_on_submit():
+           user = User.query.filter_by(email=form.email.data).first()
+           if user:
+               send_password_reset_email(user.email)
+               flash('An email with instructions to reset your password has been sent.', 'info')
+               return redirect(url_for('login'))
+           else:
+               flash('No account found with that email address.', 'danger')
+               return redirect(url_for('forgot_password'))
+
+   def send_password_reset_email(email):
+       token = generate_confirmation_token(email)
+       reset_url = url_for('reset_password', token=token, _external=True)
+       message = Message('Password Reset Request', sender='your_email@example.com', recipients=[email])
+       message.body = f'To reset your password, click on the link: {reset_url}'
+       mail.send(message)
+
+   @app.route('/reset_password/<token>', methods=['GET', 'POST'])
+   def reset_password(token):
+       email = confirm_token(token)
+       if email:
+           # Update user password in the database
+           flash('Password reset successfully!', 'success')
+           return redirect(url_for('login'))
+       else:
+           flash('Invalid or expired reset link.', 'danger')
+           return redirect(url_for('home'))
+   ```
+
+2. **Create Password Reset Route:**
+   ```python
+   @app.route('/reset_password/<token>', methods=['GET', 'POST'])
+   def reset_password(token):
+       email = confirm_token(token)
+       if email:
+           # Update user password in the database
+           flash('Password reset successfully!', 'success')
+           return redirect(url_for('login'))
+       else:
+           flash('Invalid or expired reset link.', 'danger')
+           return redirect(url_for('home'))
+   ```
+
+Remember to customize these code snippets based on your specific needs, including configuring the email settings, updating the database, and integrating the logic with your existing code. Additionally, make sure to handle security considerations for email confirmation and password reset functionalities.
