@@ -504,3 +504,196 @@ The code I provided covers several essential aspects of a URL shortening website
    - Consider using a reverse proxy (e.g., Nginx or Apache) for additional security and performance benefits.
 
 Remember that these considerations are general guidelines, and the specific needs of your project might require additional steps. Always prioritize security and follow best practices to create a reliable and secure web application.
+
+Creating an entire web application with all the required code is quite extensive and beyond the scope of a single response. However, I can provide you with a simplified version of a URL shortening web application that includes key features. Please note that this is a basic example, and you should adapt it according to your specific needs and security considerations.
+
+### Project Structure:
+
+Create a folder structure for your project:
+
+```plaintext
+/url_shortener
+    ├── app.py
+    ├── templates
+    │   ├── index.html
+    │   ├── result.html
+    │   ├── login.html
+    │   ├── analytics.html
+    │   └── 404.html
+    ├── static
+    │   ├── style.css
+    │   └── script.js
+    └── url_shortener.db
+```
+
+### Python (app.py):
+
+```python
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import sqlite3
+import hashlib
+import os
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'  # Change this to a secure key
+
+# SQLite database setup
+conn = sqlite3.connect('url_shortener.db')
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS url_mappings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        short_url TEXT UNIQUE,
+        long_url TEXT,
+        user_id INTEGER
+    )
+''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS url_analytics (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        short_url TEXT,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+''')
+conn.commit()
+
+login_manager = LoginManager(app)
+
+class User(UserMixin):
+    pass
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Replace this with actual user loading logic (from a database, for example)
+    user = User()
+    user.id = user_id
+    return user
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/shorten', methods=['POST'])
+@login_required
+def shorten():
+    long_url = request.form['long_url']
+    short_url = hashlib.sha256(long_url.encode()).hexdigest()[:8]
+
+    # Store short_url, long_url, and user_id in the database
+    cursor.execute('INSERT INTO url_mappings (short_url, long_url, user_id) VALUES (?, ?, ?)',
+                   (short_url, long_url, current_user.id))
+    conn.commit()
+
+    flash('URL shortened successfully.', 'success')
+    return redirect(url_for('result', short_url=short_url))
+
+@app.route('/result/<short_url>')
+@login_required
+def result(short_url):
+    return render_template('result.html', short_url=short_url)
+
+@app.route('/<short_url>')
+def redirect_to_long_url(short_url):
+    cursor.execute('INSERT INTO url_analytics (short_url) VALUES (?)', (short_url,))
+    conn.commit()
+
+    cursor.execute('SELECT long_url FROM url_mappings WHERE short_url = ?', (short_url,))
+    result = cursor.fetchone()
+
+    if result:
+        long_url = result[0]
+        return redirect(long_url)
+    else:
+        return render_template('404.html'), 404
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Implement actual login logic (check credentials, etc.)
+        user = User()
+        user.id = 'user_id'  # Replace with the user's actual ID
+        login_user(user)
+        flash('Logged in successfully.', 'success')
+        return redirect(url_for('home'))
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out successfully.', 'info')
+    return redirect(url_for('home'))
+
+@app.route('/analytics/<short_url>')
+@login_required
+def analytics(short_url):
+    cursor.execute('SELECT * FROM url_analytics WHERE short_url = ?', (short_url,))
+    results = cursor.fetchall()
+    return render_template('analytics.html', analytics=results)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+### Frontend (templates folder):
+
+#### 1. `index.html`:
+
+```html
+<!-- Your existing index.html code -->
+```
+
+#### 2. `result.html`:
+
+```html
+<!-- Your existing result.html code -->
+```
+
+#### 3. `login.html`:
+
+```html
+<!-- Your existing login.html code -->
+```
+
+#### 4. `analytics.html`:
+
+```html
+<!-- Your existing analytics.html code -->
+```
+
+#### 5. `404.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 Not Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>404 Not Found</h1>
+    <p>The requested URL was not found on this server.</p>
+</body>
+</html>
+```
+
+### Static (static folder):
+
+#### 1. `style.css`:
+
+```css
+/* Your existing style.css code */
+```
+
+#### 2. `script.js`:
+
+```javascript
+// Your existing script.js code
+```
+
+This example includes the implementation of user authentication, error handling, and basic analytics. Remember to customize it further based on your project requirements and security considerations.
