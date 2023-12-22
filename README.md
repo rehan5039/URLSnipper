@@ -697,3 +697,136 @@ if __name__ == '__main__':
 ```
 
 This example includes the implementation of user authentication, error handling, and basic analytics. Remember to customize it further based on your project requirements and security considerations.
+
+Certainly, let's enhance the application by adding user registration, improving the user interface, and securing password storage using Flask-Bcrypt.
+
+### Python (app.py):
+
+```python
+from flask_bcrypt import Bcrypt
+from flask_wtf.csrf import CSRFProtect
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Length, EqualTo
+from flask_login import login_required, current_user
+
+# ... (previous code)
+
+bcrypt = Bcrypt(app)
+csrf = CSRFProtect(app)
+
+# ... (existing code)
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Sign Up')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        # Replace this with actual user registration logic (store username and hashed_password in the database)
+        flash('Your account has been created! You are now able to log in.', 'success')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
+
+@app.route('/account')
+@login_required
+def account():
+    return render_template('account.html', title='Account')
+
+# ... (existing code)
+```
+
+### Frontend (templates folder):
+
+#### 6. `register.html`:
+
+```html
+<!-- Your existing register.html code -->
+```
+
+#### 7. `account.html`:
+
+```html
+<!-- Your existing account.html code -->
+```
+
+### Static (static folder):
+
+#### 3. `style.css`:
+
+```css
+/* Your existing style.css code */
+```
+
+Now, you'll need to create the `register.html` and `account.html` templates in the `templates` folder.
+
+### HTML (templates folder):
+
+#### 6. `register.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}<br>
+            {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.password.label }}<br>
+            {{ form.password(size=32) }}<br>
+            {% for error in form.password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_password.label }}<br>
+            {{ form.confirm_password(size=32) }}<br>
+            {% for error in form.confirm_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 7. `account.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Account</h2>
+    <p>Welcome, {{ current_user.username }}!</p>
+</body>
+</html>
+```
+
+Remember to adjust the code according to your needs and integrate it with your database for user registration and account management. Additionally, handle user authentication securely and implement proper security measures.
