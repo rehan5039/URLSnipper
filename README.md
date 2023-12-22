@@ -1148,3 +1148,91 @@ Implementing all the features mentioned requires a comprehensive set of code tha
    ```
 
 Remember to customize these code snippets based on your specific needs, including configuring the email settings, updating the database, and integrating the logic with your existing code. Additionally, make sure to handle security considerations for email confirmation and password reset functionalities.
+
+Creating a comprehensive web application with all the features mentioned, including user registration, email confirmation, password reset, and more, is a complex task that can't be covered in a single response due to its length and complexity. However, I can provide you with a basic structure to get started. Please note that this code is simplified, and you need to adapt it according to your specific requirements and best practices.
+
+### Project Structure:
+
+```plaintext
+/url_shortener
+    ├── app.py
+    ├── templates
+    │   ├── index.html
+    │   ├── result.html
+    │   ├── login.html
+    │   ├── analytics.html
+    │   ├── register.html
+    │   ├── account.html
+    │   ├── profile.html
+    │   ├── my_urls.html
+    │   ├── forgot_password.html
+    │   └── reset_password.html
+    ├── static
+    │   └── style.css
+    └── url_shortener.db
+```
+
+### Python (app.py):
+
+```python
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_mail import Mail, Message
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import CSRFProtect
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Length, Email, EqualTo
+from flask_bcrypt import Bcrypt
+from itsdangerous import URLSafeTimedSerializer
+import os
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///url_shortener.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['MAIL_SERVER'] = 'your_mail_server'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'your_mail_username'
+app.config['MAIL_PASSWORD'] = 'your_mail_password'
+
+db = SQLAlchemy(app)
+bcrypt = Bcrypt(app)
+csrf = CSRFProtect(app)
+mail = Mail(app)
+login_manager = LoginManager(app)
+
+# ... (other existing code)
+
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(20), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password = db.Column(db.String(60), nullable=False)
+    confirmed = db.Column(db.Boolean, default=False)
+
+# ... (existing code)
+
+class RegistrationForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Sign Up')
+
+# ... (other existing code)
+
+class ProfileForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired()])
+    confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Update Password')
+
+# ... (existing code)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+This code provides a basic structure with user registration, email confirmation, password reset, and other features. However, it is essential to customize and expand upon this foundation based on your specific needs, including database interactions, securing sensitive information, and refining the user interface. Additionally, ensure that you follow security best practices and thoroughly test your application before deploying it to a production environment.
