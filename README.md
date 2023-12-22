@@ -830,3 +830,127 @@ Now, you'll need to create the `register.html` and `account.html` templates in t
 ```
 
 Remember to adjust the code according to your needs and integrate it with your database for user registration and account management. Additionally, handle user authentication securely and implement proper security measures.
+
+Certainly! Let's further improve the URL shortening web application by adding features like profile management, displaying user-specific URLs, and refining the analytics page.
+
+### Python (app.py):
+
+```python
+# ... (existing code)
+
+class ProfileForm(FlaskForm):
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    new_password = PasswordField('New Password', validators=[DataRequired()])
+    confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Update Password')
+
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    form = ProfileForm()
+    if form.validate_on_submit():
+        if bcrypt.check_password_hash(current_user.password, form.current_password.data):
+            hashed_password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+            # Replace this with actual password update logic in the database
+            flash('Password updated successfully.', 'success')
+        else:
+            flash('Current password is incorrect.', 'danger')
+    return render_template('profile.html', title='Profile', form=form)
+
+@app.route('/my_urls')
+@login_required
+def my_urls():
+    cursor.execute('SELECT * FROM url_mappings WHERE user_id = ?', (current_user.id,))
+    user_urls = cursor.fetchall()
+    return render_template('my_urls.html', user_urls=user_urls)
+
+# ... (existing code)
+```
+
+### Frontend (templates folder):
+
+#### 8. `profile.html`:
+
+```html
+<!-- Your existing profile.html code -->
+```
+
+#### 9. `my_urls.html`:
+
+```html
+<!-- Your existing my_urls.html code -->
+```
+
+### HTML (templates folder):
+
+#### 8. `profile.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Profile</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.current_password.label }}<br>
+            {{ form.current_password(size=32) }}<br>
+            {% for error in form.current_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.new_password.label }}<br>
+            {{ form.new_password(size=32) }}<br>
+            {% for error in form.new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_new_password.label }}<br>
+            {{ form.confirm_new_password(size=32) }}<br>
+            {% for error in form.confirm_new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 9. `my_urls.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My URLs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>My URLs</h2>
+    {% if user_urls %}
+        <ul>
+            {% for url in user_urls %}
+                <li>{{ url.short_url }} - <a href="{{ url.long_url }}" target="_blank">Original URL</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No URLs found.</p>
+    {% endif %}
+</body>
+</html>
+```
+
+These additions include a profile management page with the ability to update the password and a page to display URLs specific to the logged-in user. Remember to handle password updates securely, and consider incorporating user feedback for a better user experience.
