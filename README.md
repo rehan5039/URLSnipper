@@ -357,3 +357,117 @@ To create a URL shortening website, apart from the given code snippets, there ar
 7. **Deployment Configuration:** Website ko deploy karne ke liye, aapko server configuration aur deployment ke liye additional settings ki zarurat hogi. Popular choices include Heroku, AWS, or any other hosting service of your preference.
 
 These additional features will enhance your website and improve the user experience.  While adding each feature, you should also follow security best practices.
+
+let's add a few more components to enhance the URL shortening website. We'll implement user authentication, error handling, and rate limiting. Additionally, I'll provide a basic analytics setup.
+
+### User Authentication (Using Flask-Login):
+
+Install Flask-Login:
+
+```bash
+pip install Flask-Login
+```
+
+Update `app.py`:
+
+```python
+from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'  # Change this to a secure key
+
+# ... (previous code)
+
+login_manager = LoginManager(app)
+
+class User(UserMixin):
+    pass
+
+@login_manager.user_loader
+def load_user(user_id):
+    # You would replace this with actual user loading logic (from a database, for example)
+    user = User()
+    user.id = user_id
+    return user
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        # Implement actual login logic (check credentials, etc.)
+        user = User()
+        user.id = 'user_id'  # Replace with the user's actual ID
+        login_user(user)
+        flash('Logged in successfully.', 'success')
+        return redirect(url_for('home'))
+    return render_template('login.html')
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Logged out successfully.', 'info')
+    return redirect(url_for('home'))
+```
+
+Create a `login.html` template in the `templates` folder.
+
+### Error Handling:
+
+Update `app.py` to include error handling:
+
+```python
+# ... (previous code)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+```
+
+Create a `404.html` template in the `templates` folder.
+
+### Rate Limiting (Using Flask-Limiter):
+
+Install Flask-Limiter:
+
+```bash
+pip install Flask-Limiter
+```
+
+Update `app.py`:
+
+```python
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+# ... (previous code)
+
+limiter = Limiter(app, key_func=get_remote_address)
+
+# Apply rate limiting to the /shorten route
+@limiter.limit("5 per minute")
+@app.route('/shorten', methods=['POST'])
+def shorten():
+    # ... (previous code)
+```
+
+### Basic Analytics:
+
+Update `app.py`:
+
+```python
+from flask import g
+
+# ... (previous code)
+
+@app.route('/analytics/<short_url>')
+@login_required
+def analytics(short_url):
+    cursor.execute('SELECT * FROM url_analytics WHERE short_url = ?', (short_url,))
+    results = cursor.fetchall()
+    return render_template('analytics.html', analytics=results)
+```
+
+Create an `analytics.html` template in the `templates` folder.
+
+Remember, these are basic examples to get you started. You would need to customize them based on your specific requirements, integrate them with your database, and enhance security where needed. Also, ensure that you handle user authentication securely and use appropriate mechanisms for password storage.
