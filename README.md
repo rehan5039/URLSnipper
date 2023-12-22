@@ -209,3 +209,132 @@ def shorten():
 ```
 
 These steps cover the basic functionality of a URL shortener. Keep in mind that for a production environment, you'll need to consider additional aspects like user authentication, securing the database, and deploying the application to a production server. It's also crucial to address potential security concerns before deploying your service publicly.
+
+
+To create a website and develop a URL shortening service, some things are required, such as frontend code (HTML, CSS, JavaScript) and backend code (server-side code, database interactions).  Here, I am providing some basic code snippets, but for complete implementation you will have to customize them according to your specific requirements and chosen technology stack.
+
+### Frontend (HTML, CSS, JavaScript):
+
+#### 1. HTML (index.html):
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    <form id="shortenForm">
+        <label for="long_url">Long URL:</label>
+        <input type="text" id="long_url" required>
+        <button type="button" onclick="shortenUrl()">Shorten</button>
+    </form>
+
+    <div id="result" style="display:none;">
+        <h2>Shortened URL:</h2>
+        <p id="short_url"></p>
+        <a id="short_url_link" href="" target="_blank">Visit Short URL</a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+```
+
+#### 2. CSS (style.css):
+```css
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 50px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+#result {
+    display: none;
+    margin-top: 20px;
+}
+```
+
+#### 3. JavaScript (script.js):
+```javascript
+function shortenUrl() {
+    var longUrl = document.getElementById('long_url').value;
+
+    // Send a request to the backend to shorten the URL
+    // Update the DOM with the shortened URL
+    // (Implementation depends on your chosen backend)
+
+    // For demonstration purposes, directly updating the DOM
+    var resultDiv = document.getElementById('result');
+    var shortUrlElement = document.getElementById('short_url');
+    var shortUrlLink = document.getElementById('short_url_link');
+
+    // For simplicity, using a basic hash as a placeholder for the short URL
+    var shortUrl = '#' + Math.random().toString(36).substring(7);
+
+    shortUrlElement.textContent = shortUrl;
+    shortUrlLink.href = shortUrl;
+    resultDiv.style.display = 'block';
+}
+```
+
+### Backend (Server-side code, Database interactions):
+
+#### 1. Python (app.py):
+```python
+from flask import Flask, render_template, request, redirect
+import sqlite3
+import hashlib
+
+app = Flask(__name__)
+
+# SQLite database setup
+conn = sqlite3.connect('url_shortener.db')
+cursor = conn.cursor()
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS url_mappings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        short_url TEXT UNIQUE,
+        long_url TEXT
+    )
+''')
+conn.commit()
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/shorten', methods=['POST'])
+def shorten():
+    long_url = request.form['long_url']
+    short_url = hashlib.sha256(long_url.encode()).hexdigest()[:8]
+
+    # Store short_url and long_url in the database
+    cursor.execute('INSERT INTO url_mappings (short_url, long_url) VALUES (?, ?)', (short_url, long_url))
+    conn.commit()
+
+    return render_template('result.html', short_url=short_url)
+
+@app.route('/<short_url>')
+def redirect_to_long_url(short_url):
+    cursor.execute('SELECT long_url FROM url_mappings WHERE short_url = ?', (short_url,))
+    result = cursor.fetchone()
+
+    if result:
+        long_url = result[0]
+        return redirect(long_url)
+    else:
+        return 'Short URL not found', 404
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+These code snippets cover basic functionality.  You will have to customize them as per the requirements of your project.  Before deploying this project, it is very important to keep in mind the security concerns.
