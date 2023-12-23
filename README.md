@@ -1390,3 +1390,421 @@ This code provides a basic structure with user registration, email confirmation,
 </body>
 </html>
 ```
+
+### Frontend (HTML, CSS, JavaScript):
+
+#### 1. `register.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Register</h2>
+    <form method="POST" action="{{ url_for('register') }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}<br>
+            {% for error in form.username.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+            {% for error in form.email.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.password.label }}<br>
+            {{ form.password(size=32) }}<br>
+            {% for error in form.password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_password.label }}<br>
+            {{ form.confirm_password(size=32) }}<br>
+            {% for error in form.confirm_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 2. `profile.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Profile</h2>
+    <form method="POST" action="{{ url_for('profile') }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.current_password.label }}<br>
+            {{ form.current_password(size=32) }}<br>
+            {% for error in form.current_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.new_password.label }}<br>
+            {{ form.new_password(size=32) }}<br>
+            {% for error in form.new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_new_password.label }}<br>
+            {{ form.confirm_new_password(size=32) }}<br>
+            {% for error in form.confirm_new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 3. `my_urls.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My URLs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>My URLs</h2>
+    {% if user_urls %}
+        <ul>
+            {% for url in user_urls %}
+                <li>{{ url.short_url }} - <a href="{{ url.long_url }}" target="_blank">Original URL</a></li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No URLs found.</p>
+    {% endif %}
+</body>
+</html>
+```
+
+#### 4. `forgot_password.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Forgot Password</h2>
+    <form method="POST" action="{{ url_for('forgot_password') }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+            {% for error in form.email.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 5. `reset_password.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+    {% extends 'base.html' %}
+
+{% block title %}Reset Password{% endblock %}
+
+{% block content %}
+    <h2>Reset Password</h2>
+    <p>Enter your new password below:</p>
+
+    <form method="POST" action="{{ url_for('reset_password', token=token) }}">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.new_password.label }}<br>
+            {{ form.new_password(size=32) }}<br>
+            {% for error in form.new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_new_password.label }}<br>
+            {{ form.confirm_new_password(size=32) }}<br>
+            {% for error in form.confirm_new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+{% endblock %}
+</body>
+</html>
+```
+
+### Python (app.py - continued):
+
+```python
+# ... (existing code)
+
+class PasswordResetForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Submit')
+
+# ... (existing code)
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    form = PasswordResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            send_password_reset_email(user.email)
+            flash('An email with instructions to reset your password has been sent.', 'info')
+            return redirect(url_for('login'))
+        else:
+            flash('No account found with that email address.', 'danger')
+    return render_template('forgot_password.html', form=form)
+
+# ... (existing code)
+
+class ResetPasswordForm(FlaskForm):
+    new_password = PasswordField('New Password', validators=[DataRequired()])
+    confirm_new_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
+    submit = SubmitField('Reset Password')
+
+# ... (existing code)
+
+@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = confirm_token(token)
+    if email:
+        form = ResetPasswordForm()
+        if form.validate_on_submit():
+            user = User.query.filter_by(email=email).first()
+            if user:
+                user.password = bcrypt.generate_password_hash(form.new_password.data).decode('utf-8')
+                db.session.commit()
+                flash('Password reset successfully!', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('User not found.', 'danger')
+        return render_template('reset_password.html', form=form)
+    else:
+        flash('Invalid or expired reset link.', 'danger')
+        return redirect(url_for('home'))
+
+# ... (existing code)
+```
+
+### Frontend (templates folder):
+
+#### 10. `forgot_password.html`:
+
+```html
+<!-- Your existing forgot_password.html code -->
+```
+
+#### 11. `reset_password.html`:
+
+```html
+<!-- Your existing reset_password.html code -->
+```
+
+#### 12. `base.html` (Include navigation links for login, register, profile, and my_urls):
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('my_urls') }}">My URLs</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+```
+
+### HTML (templates folder):
+
+#### 10. `forgot_password.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Forgot Password</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.email.label }}<br>
+            {{ form.email(size=32) }}<br>
+            {% for error in form.email.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 11. `reset_password.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h2>Reset Password</h2>
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <div>
+            {{ form.new_password.label }}<br>
+            {{ form.new_password(size=32)
+            
+) }}<br>
+            {% for error in form.new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.confirm_new_password.label }}<br>
+            {{ form.confirm_new_password(size=32) }}<br>
+            {% for error in form.confirm_new_password.errors %}
+                <span style="color: red;">{{ error }}</span><br>
+            {% endfor %}
+        </div>
+        <div>
+            {{ form.submit }}
+        </div>
+    </form>
+</body>
+</html>
+```
+
+#### 12. `base.html`:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('my_urls') }}">My URLs</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
+```
+
+This continuation includes the HTML templates for the 'forgot_password' and 'reset_password' pages along with updates to the 'base.html' file. 
