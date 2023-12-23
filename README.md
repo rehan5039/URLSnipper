@@ -1236,3 +1236,157 @@ if __name__ == '__main__':
 ```
 
 This code provides a basic structure with user registration, email confirmation, password reset, and other features. However, it is essential to customize and expand upon this foundation based on your specific needs, including database interactions, securing sensitive information, and refining the user interface. Additionally, ensure that you follow security best practices and thoroughly test your application before deploying it to a production environment.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #333;
+            padding: 1em;
+            text-align: center;
+            color: white;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #444;
+            padding: 1em 0;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2em auto;
+            padding: 1em;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label, input {
+            margin: 0.5em 0;
+        }
+
+        input[type="submit"] {
+            padding: 0.5em;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        ul li {
+            margin: 0.5em 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1em;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        #short-url {
+            font-weight: bold;
+            color: #2196F3;
+        }
+
+        #error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>URL Shortener</h1>
+</header>
+
+<nav>
+    <a href="/">Home</a>
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+    <a href="/logout">Logout</a>
+</nav>
+
+<main>
+    <form id="url-form">
+        <label for="long-url">Enter URL:</label>
+        <input type="url" id="long-url" name="long_url" required>
+        <input type="submit" value="Shorten URL">
+    </form>
+
+    <p id="short-url" style="display:none;"></p>
+    <p id="error-message" style="display:none;"></p>
+
+    <!-- Placeholder for JavaScript -->
+    <script>
+        document.getElementById('url-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Your JavaScript code for form submission and handling the response goes here
+
+            // Example: Displaying a message on the page
+            var shortUrlElement = document.getElementById('short-url');
+            var errorMessageElement = document.getElementById('error-message');
+
+            // Simulate a successful response
+            var success = true;
+
+            if (success) {
+                shortUrlElement.innerText = 'Shortened URL: example.com/abc';
+                shortUrlElement.style.display = 'block';
+                errorMessageElement.style.display = 'none';
+            } else {
+                errorMessageElement.innerText = 'An error occurred';
+                errorMessageElement.style.display = 'block';
+                shortUrlElement.style.display = 'none';
+            }
+        });
+    </script>
+</main>
+
+<footer>
+    &copy; 2024 URLSnipper
+</footer>
+
+</body>
+</html>
+```
